@@ -26,7 +26,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
  * Entry point classes define <code>onModuleLoad()</code>.
  */
 public class Stockwatcher implements EntryPoint {
-	private static final int REFRESH_INTERVAL = 5000; // ms
+	private static final int REFRESH_INTERVAL = 1000; // ms
 	private VerticalPanel mainPanel = new VerticalPanel();
 	private FlexTable stocksFlexTable = new FlexTable();
 	private HorizontalPanel addPanel = new HorizontalPanel();
