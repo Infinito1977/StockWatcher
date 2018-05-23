@@ -1,7 +1,4 @@
-/*
-
-!.gitignore
-!/src
-!/war
-/war/stockwatcher
-/war/WEB-INF
+/gwt-unitCache/
+/.classpath
+/.settings
+/.project
