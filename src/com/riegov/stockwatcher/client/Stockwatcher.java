@@ -45,7 +45,7 @@ public class Stockwatcher implements EntryPoint {
     private ArrayList<String> stocks = new ArrayList<String>();
     private Label errorMsgLabel = new Label();
     private static final String JSON_URL = GWT.getModuleBaseURL() + "stockPrices?q=";
-    // private static final String JSON_URL = GWT.getModuleBaseURL() + "BADURL?q=";
+//    private static final String JSON_URL = GWT.getModuleBaseURL() + "BADURL?q=";
 
     /**
      * This is the entry point method.
@@ -77,6 +77,7 @@ public class Stockwatcher implements EntryPoint {
 	errorMsgLabel.setVisible(false);
 
 	// Assemble Main panel.
+	mainPanel.add(errorMsgLabel);
 	mainPanel.add(stocksFlexTable);
 	mainPanel.add(addPanel);
 	mainPanel.add(lastUpdatedLabel);
