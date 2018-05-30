@@ -4,8 +4,19 @@
               http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
          version="2.5"
          xmlns="http://java.sun.com/xml/ns/javaee">
-  <!-- Default page to serve -->
-  <welcome-file-list>
-    <welcome-file>Stockwatcher.html</welcome-file>
-  </welcome-file-list>
+	<!-- Default page to serve -->
+	<welcome-file-list>
+		<welcome-file>Stockwatcher.html</welcome-file>
+	</welcome-file-list>
+
+	<!-- Servlets -->
+	<servlet>
+		<servlet-name>jsonStockData</servlet-name>
+		<servlet-class>com.riegov.stockwatcher.server.JsonStockData</servlet-class>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>jsonStockData</servlet-name>
+		<url-pattern>/stockwatcher/stockPrices</url-pattern>
+	</servlet-mapping>
 </web-app>
