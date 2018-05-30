@@ -181,7 +181,7 @@ public class Stockwatcher implements EntryPoint {
 	// Send request to server and catch any errors.
 	RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, url);
 	try {
-	    Request request = builder.sendRequest(null, new RequestCallback() {
+	    builder.sendRequest(null, new RequestCallback() {
 		public void onError(Request request, Throwable exception) {
 		    displayError("Couldn’t retrieve JSON");
 		}
