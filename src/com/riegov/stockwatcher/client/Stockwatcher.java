@@ -187,7 +187,7 @@ public class Stockwatcher implements EntryPoint {
 		}
 
 		public void onResponseReceived(Request request, Response response) {
-		    if (200 == response.getStatusCode()) {
+		    if (response.getStatusCode() == 200) {
 			updateTable(JsonUtils.<JsArray<StockData>>safeEval(response.getText()));
 		    } else {
 			displayError("Couldn't retrieve JSON (" + response.getStatusText() + ")");
