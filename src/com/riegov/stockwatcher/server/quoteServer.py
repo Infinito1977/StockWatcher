@@ -1,4 +1,4 @@
-#! python.exe
+#!/usr/bin/env python2.4
 #
 # Copyright 2007 Google Inc. All Rights Reserved.
 
@@ -16,25 +16,25 @@ class MyHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
     form = {}
     if self.path.find('?') > -1:
       queryStr = self.path.split('?')[1]
-      form = dict([queryParam.split('=') for queryParam in queryStr.split('&amp;')])
+      form = dict([queryParam.split('=') for queryParam in queryStr.split('&')])
 
-      body = '['
+    body = '['
 
-      if 'q' in form:
-        quotes = []
+    if 'q' in form:
+      quotes = []
 
-        for symbol in urllib.unquote_plus(form['q']).split(' '):
-          price = random.random() * MAX_PRICE
-          change = price * MAX_PRICE_CHANGE * (random.random() * 2.0 - 1.0)
-          quotes.append(('{"symbol":"%s","price":%f,"change":%f}'
+      for symbol in urllib.unquote_plus(form['q']).split(' '):
+        price = random.random() * MAX_PRICE
+        change = price * MAX_PRICE_CHANGE * (random.random() * 2.0 - 1.0)
+        quotes.append(('{"symbol":"%s","price":%f,"change":%f}'
                        % (symbol, price, change)))
 
-        body += ','.join(quotes)
+      body += ','.join(quotes)
 
-      body += ']'
+    body += ']'
 
-      if 'callback' in form:
-        body = ('%s(%s);' % (form['callback'], body))
+    if 'callback' in form:
+      body = ('%s(%s);' % (form['callback'], body))
 
     self.send_response(200)
     self.send_header('Content-Type', 'text/javascript')
