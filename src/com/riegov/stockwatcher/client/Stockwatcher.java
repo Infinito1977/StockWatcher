@@ -5,24 +5,19 @@ import java.util.Date;
 import java.util.Iterator;
 
 import com.google.gwt.core.client.EntryPoint;
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JsArray;
-import com.google.gwt.core.client.JsonUtils;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyUpEvent;
 import com.google.gwt.event.dom.client.KeyUpHandler;
-import com.google.gwt.http.client.Request;
-import com.google.gwt.http.client.RequestBuilder;
-import com.google.gwt.http.client.RequestCallback;
-import com.google.gwt.http.client.RequestException;
-import com.google.gwt.http.client.Response;
 import com.google.gwt.http.client.URL;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.i18n.client.NumberFormat;
+import com.google.gwt.jsonp.client.JsonpRequestBuilder;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HorizontalPanel;
@@ -44,8 +39,8 @@ public class Stockwatcher implements EntryPoint {
     private Label lastUpdatedLabel = new Label();
     private ArrayList<String> stocks = new ArrayList<String>();
     private Label errorMsgLabel = new Label();
-    private static final String JSON_URL = GWT.getModuleBaseURL() + "stockPrices?q=";
-//    private static final String JSON_URL = GWT.getModuleBaseURL() + "BADURL?q=";
+//    private static final String JSON_URL = "http://localhost:8000/?q=";
+    private static final String JSON_URL = "http://www.rieger-consulting.de/stockPrices.php?q=";
 
     /**
      * This is the entry point method.
@@ -178,25 +173,21 @@ public class Stockwatcher implements EntryPoint {
 
 	url = URL.encode(url);
 
-	// Send request to server and catch any errors.
-	RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, url);
-	try {
-	    builder.sendRequest(null, new RequestCallback() {
-		public void onError(Request request, Throwable exception) {
-		    displayError("Couldn’t retrieve JSON");
+	JsonpRequestBuilder builder = new JsonpRequestBuilder();
+	builder.requestObject(url, new AsyncCallback<JsArray<StockData>>() {
+	    public void onFailure(Throwable caught) {
+		displayError("Couldn't retrieve JSON");
+	    }
+
+	    public void onSuccess(JsArray<StockData> data) {
+		if (data == null) {
+		    displayError("Couldn't retrieve JSON");
+		    return;
 		}
 
-		public void onResponseReceived(Request request, Response response) {
-		    if (response.getStatusCode() == 200) {
-			updateTable(JsonUtils.<JsArray<StockData>>safeEval(response.getText()));
-		    } else {
-			displayError("Couldn't retrieve JSON (" + response.getStatusText() + ")");
-		    }
-		}
-	    });
-	} catch (RequestException e) {
-	    displayError("Couldn’t retrieve JSON");
-	}
+		updateTable(data);
+	    }
+	});
     }
 
     /**
