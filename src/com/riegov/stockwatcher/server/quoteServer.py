@@ -10,6 +10,7 @@ import random
 MAX_PRICE = 100.0
 MAX_PRICE_CHANGE = 0.02
 
+
 class MyHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
   def do_GET(self):
@@ -26,8 +27,7 @@ class MyHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
       for symbol in urllib.unquote_plus(form['q']).split(' '):
         price = random.random() * MAX_PRICE
         change = price * MAX_PRICE_CHANGE * (random.random() * 2.0 - 1.0)
-        quotes.append(('{"symbol":"%s","price":%f,"change":%f}'
-                       % (symbol, price, change)))
+        quotes.append(('{"symbol":"%s","price":%f,"change":%f}' % (symbol, price, change)))
 
       body += ','.join(quotes)
 
@@ -47,6 +47,7 @@ class MyHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
     self.wfile.write(body)
     self.wfile.flush()
     self.connection.shutdown(1)
+
 
 bhs = BaseHTTPServer.HTTPServer(('', 8000), MyHandler)
 bhs.serve_forever()
