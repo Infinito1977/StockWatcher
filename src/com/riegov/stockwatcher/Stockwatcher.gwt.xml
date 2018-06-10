@@ -22,6 +22,7 @@
 
 	<!-- Specify the app entry point class.                         -->
 	<entry-point class='com.riegov.stockwatcher.client.Stockwatcher'/>
+	<extend-property name="locale" values="de"/>
 
 	<!-- Specify the paths for translatable code                    -->
 	<source path='client'/>
