@@ -1,6 +1,9 @@
 package com.rieger.stockwatcher.client;
 
-public class StockPrice {
+import java.io.Serializable;
+
+public class StockPrice implements Serializable {
+	private static final long serialVersionUID = -7032757631548274044L;
 	private String symbol;
 	private double price;
 	private double change;
