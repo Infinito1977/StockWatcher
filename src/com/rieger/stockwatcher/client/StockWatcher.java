@@ -37,6 +37,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
  */
 public class StockWatcher implements EntryPoint {
 	private static final int REFRESH_INTERVAL = 1000; // ms
+	// TODO: Switch server versions
 //	private static final String JSON_URL = GWT.getModuleBaseURL() + "stockPricesJson?q=";
 	private static final String JSON_URL_PHP = "StockPrices.php?q=";
 
@@ -91,6 +92,7 @@ public class StockWatcher implements EntryPoint {
 		Timer refreshTimer = new Timer() {
 			@Override
 			public void run() {
+				// TODO: Switch server versions
 				refreshWatchListJson();
 			}
 		};
