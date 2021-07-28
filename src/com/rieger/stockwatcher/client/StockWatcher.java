@@ -2,14 +2,23 @@ package com.rieger.stockwatcher.client;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.JsArray;
+import com.google.gwt.core.client.JsonUtils;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
+import com.google.gwt.http.client.Request;
+import com.google.gwt.http.client.RequestBuilder;
+import com.google.gwt.http.client.RequestCallback;
+import com.google.gwt.http.client.RequestException;
+import com.google.gwt.http.client.Response;
+import com.google.gwt.http.client.URL;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.Timer;
@@ -28,6 +37,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
  */
 public class StockWatcher implements EntryPoint {
 	private static final int REFRESH_INTERVAL = 1000; // ms
+	private static final String JSON_URL = GWT.getModuleBaseURL() + "stockPricesJson?q=";
 
 	private VerticalPanel mainPanel = new VerticalPanel();
 	private FlexTable stocksFlexTable = new FlexTable();
@@ -80,7 +90,7 @@ public class StockWatcher implements EntryPoint {
 		Timer refreshTimer = new Timer() {
 			@Override
 			public void run() {
-				refreshWatchList();
+				refreshWatchListJson();
 			}
 		};
 		refreshTimer.scheduleRepeating(REFRESH_INTERVAL);
@@ -148,7 +158,17 @@ public class StockWatcher implements EntryPoint {
 		// TODO Get the stock price.
 	}
 
-	private void refreshWatchList() {
+	/**
+	 * If can't get JSON, display error message.
+	 * 
+	 * @param error
+	 */
+	private void displayError(String error) {
+		errorMsgLabel.setText("Error: " + error);
+		errorMsgLabel.setVisible(true);
+	}
+
+	private void refreshWatchListRPC() {
 		// Initialize the service proxy.
 		if (stockPriceSvc == null) {
 			stockPriceSvc = GWT.create(StockPriceService.class);
@@ -176,6 +196,46 @@ public class StockWatcher implements EntryPoint {
 		stockPriceSvc.getPrices(stocks.toArray(new String[0]), callback);
 	}
 
+	private void refreshWatchListJson() {
+		if (stocks.size() == 0) {
+			return;
+		}
+
+		String url = JSON_URL;
+
+		// Append watch list stock symbols to query URL.
+		Iterator<String> iter = stocks.iterator();
+		while (iter.hasNext()) {
+			url += iter.next();
+			if (iter.hasNext()) {
+				url += "+";
+			}
+		}
+
+		url = URL.encode(url);
+
+		// Send request to server and catch any errors.
+		RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, url);
+		try {
+			builder.sendRequest(null, new RequestCallback() {
+				public void onError(Request request, Throwable exception) {
+					displayError("Couldn't retrieve JSON");
+				}
+
+				@Override
+				public void onResponseReceived(Request request, Response response) {
+					if (response.getStatusCode() == 200) {
+						updateTable(JsonUtils.<JsArray<StockData>>safeEval(response.getText()));
+					} else {
+						displayError("Couldn't retrieve JSON (" + response.getStatusText() + ")");
+					}
+				}
+			});
+		} catch (RequestException e) {
+			displayError("Couldn't retrieve JSON");
+		}
+	}
+
 	/**
 	 * Update a single row in the stock table.
 	 *
@@ -197,7 +257,41 @@ public class StockWatcher implements EntryPoint {
 
 		// Populate the Price and Change fields with new data.
 		stocksFlexTable.setText(row, 1, priceText);
-//		stocksFlexTable.setText(row, 2, changeText + " (" + changePercentText + "%)");
+		Label changeWidget = (Label) stocksFlexTable.getWidget(row, 2);
+		changeWidget.setText(changeText + " (" + changePercentText + "%)");
+
+		// Change the color of text in the Change field based on its value.
+		String changeStyleName = "noChange";
+		if (price.getChangePercent() < -0.1f) {
+			changeStyleName = "negativeChange";
+		} else if (price.getChangePercent() > 0.1f) {
+			changeStyleName = "positiveChange";
+		}
+
+		changeWidget.setStyleName(changeStyleName);
+	}
+
+	/**
+	 * Update a single row in the stock table. Json variant
+	 *
+	 * @param price Stock data for a single row.
+	 */
+	private void updateTable(StockData price) {
+		// Make sure the stock is still in the stock table.
+		if (!stocks.contains(price.getSymbol())) {
+			return;
+		}
+
+		int row = stocks.indexOf(price.getSymbol()) + 1;
+
+		// Format the data in the Price and Change fields.
+		String priceText = NumberFormat.getFormat("#,##0.00").format(price.getPrice());
+		NumberFormat changeFormat = NumberFormat.getFormat("+#,##0.00;-#,##0.00");
+		String changeText = changeFormat.format(price.getChange());
+		String changePercentText = changeFormat.format(price.getChangePercent());
+
+		// Populate the Price and Change fields with new data.
+		stocksFlexTable.setText(row, 1, priceText);
 		Label changeWidget = (Label) stocksFlexTable.getWidget(row, 2);
 		changeWidget.setText(changeText + " (" + changePercentText + "%)");
 
@@ -220,6 +314,25 @@ public class StockWatcher implements EntryPoint {
 	private void updateTable(StockPrice[] prices) {
 		for (int i = 0; i < prices.length; i++) {
 			updateTable(prices[i]);
+		}
+
+		// Display timestamp showing last refresh.
+		DateTimeFormat dateFormat = DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.DATE_TIME_MEDIUM);
+		lastUpdatedLabel.setText("Last update : " + dateFormat.format(new Date()));
+
+		// Clear any errors.
+		errorMsgLabel.setVisible(false);
+	}
+
+	/**
+	 * Update the Price and Change fields all the rows in the stock table. Json
+	 * variant
+	 *
+	 * @param prices Stock data for all rows.
+	 */
+	private void updateTable(JsArray<StockData> prices) {
+		for (int i = 0; i < prices.length(); i++) {
+			updateTable(prices.get(i));
 		}
 
 		// Display timestamp showing last refresh.
