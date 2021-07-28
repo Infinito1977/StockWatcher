@@ -28,6 +28,7 @@ import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
@@ -37,9 +38,11 @@ import com.google.gwt.user.client.ui.VerticalPanel;
  */
 public class StockWatcher implements EntryPoint {
 	private static final int REFRESH_INTERVAL = 1000; // ms
-	// TODO: Switch server versions
-//	private static final String JSON_URL = GWT.getModuleBaseURL() + "stockPricesJson?q=";
+	private static final String JSON_URL = GWT.getModuleBaseURL() + "stockPricesJson?q=";
 	private static final String JSON_URL_PHP = "StockPrices.php?q=";
+
+	private HorizontalPanel serverPanel = new HorizontalPanel();
+	private ListBox serverChooser = new ListBox();
 
 	private VerticalPanel mainPanel = new VerticalPanel();
 	private FlexTable stocksFlexTable = new FlexTable();
@@ -55,6 +58,14 @@ public class StockWatcher implements EntryPoint {
 	 * This is the entry point method.
 	 */
 	public void onModuleLoad() {
+		// ListBox to choose the server model
+		serverChooser.addItem("GWT RPC");
+		serverChooser.addItem("JSON");
+		serverChooser.addItem("JSON PHP");
+		serverPanel.add(new Label("Server variant:"));
+		serverPanel.add(serverChooser);
+		serverPanel.addStyleName("h3");
+
 		// Create table for stock data.
 		stocksFlexTable.setText(0, 0, "Symbol");
 		stocksFlexTable.setText(0, 1, "Price");
@@ -77,6 +88,7 @@ public class StockWatcher implements EntryPoint {
 		errorMsgLabel.setStyleName("errorMessage");
 		errorMsgLabel.setVisible(false);
 
+		mainPanel.add(serverPanel);
 		mainPanel.add(errorMsgLabel);
 		mainPanel.add(stocksFlexTable);
 		mainPanel.add(addPanel);
@@ -92,8 +104,10 @@ public class StockWatcher implements EntryPoint {
 		Timer refreshTimer = new Timer() {
 			@Override
 			public void run() {
-				// TODO: Switch server versions
-				refreshWatchListJson();
+				if (serverChooser.getSelectedIndex() == 0)
+					refreshWatchListRPC();
+				else
+					refreshWatchListJson();
 			}
 		};
 		refreshTimer.scheduleRepeating(REFRESH_INTERVAL);
@@ -157,8 +171,6 @@ public class StockWatcher implements EntryPoint {
 			}
 		});
 		stocksFlexTable.setWidget(row, 3, removeStockButton);
-
-		// TODO Get the stock price.
 	}
 
 	/**
@@ -204,8 +216,9 @@ public class StockWatcher implements EntryPoint {
 			return;
 		}
 
-//		String url = JSON_URL;
-		String url = JSON_URL_PHP;
+		String url = JSON_URL;
+		if (serverChooser.getSelectedIndex() == 2)
+			url = JSON_URL_PHP;
 
 		// Append watch list stock symbols to query URL.
 		Iterator<String> iter = stocks.iterator();
