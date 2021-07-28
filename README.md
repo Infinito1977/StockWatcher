@@ -18,5 +18,5 @@ StockWatcher:refreshWatchList() -> AsyncCallback<StockPrice[]> callback = new As
 Server-Side:
 ============
 war\StockPrices.php
----------------------
+-------------------
 PHP server file that sends random stock data to the client
