@@ -37,7 +37,8 @@ import com.google.gwt.user.client.ui.VerticalPanel;
  */
 public class StockWatcher implements EntryPoint {
 	private static final int REFRESH_INTERVAL = 1000; // ms
-	private static final String JSON_URL = GWT.getModuleBaseURL() + "stockPricesJson?q=";
+//	private static final String JSON_URL = GWT.getModuleBaseURL() + "stockPricesJson?q=";
+	private static final String JSON_URL_PHP = "StockPrices.php?q=";
 
 	private VerticalPanel mainPanel = new VerticalPanel();
 	private FlexTable stocksFlexTable = new FlexTable();
@@ -201,7 +202,8 @@ public class StockWatcher implements EntryPoint {
 			return;
 		}
 
-		String url = JSON_URL;
+//		String url = JSON_URL;
+		String url = JSON_URL_PHP;
 
 		// Append watch list stock symbols to query URL.
 		Iterator<String> iter = stocks.iterator();
