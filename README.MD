@@ -8,9 +8,8 @@ data from a servlet (JsonStockDataServlet) via JSON.
 Client-Side:
 ============
 
-StockData (JavaScriptObject):
--
-GWT overlay type to use Json Data
+StockData (JavaScriptObject): GWT overlay type to use Json Data
+StockWatcher:refreshWatchList() -> AsyncCallback<StockPrice[]> callback = new AsyncCallback<StockPrice[]>()
 
 Server-Side:
 ============
